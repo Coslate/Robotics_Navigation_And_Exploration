@@ -1,11 +1,11 @@
 import sys
-import numpy as np 
+import numpy as np
 sys.path.append("..")
 import PathTracking.utils as utils
 from PathTracking.controller import Controller
 
 class ControllerPurePursuitBasic(Controller):
-    def __init__(self, kp=1, Lfc=10):
+    def __init__(self, kp=1.0, Lfc=10.0):
         self.path = None
         self.kp = kp
         self.Lfc = Lfc
@@ -15,8 +15,8 @@ class ControllerPurePursuitBasic(Controller):
         if self.path is None:
             print("No path !!")
             return None, None
-        
-        # Extract State 
+
+        # Extract State
         x, y, yaw, v = info["x"], info["y"], info["yaw"], info["v"]
 
         # Search Front Target
@@ -31,5 +31,9 @@ class ControllerPurePursuitBasic(Controller):
         target = self.path[target_idx]
 
         # TODO: Pure Pursuit Control for Basic Kinematic Model
-        next_w = 0
+        xg  = target[0]
+        yg  = target[1]
+        ang = np.arctan2(yg-y, xg-x) - yaw
+        next_w = 2*v*np.sin(ang)/Ld
+
         return next_w, target
