@@ -5,7 +5,7 @@ import PathTracking.utils as utils
 from PathTracking.controller import Controller
 
 class ControllerPurePursuitBasic(Controller):
-    def __init__(self, kp=1.0, Lfc=10.0):
+    def __init__(self, kp=1.0/10.0, Lfc=10.0/10000.0):
         self.path = None
         self.kp = kp
         self.Lfc = Lfc
@@ -33,7 +33,7 @@ class ControllerPurePursuitBasic(Controller):
         # TODO: Pure Pursuit Control for Basic Kinematic Model
         xg  = target[0]
         yg  = target[1]
-        ang = np.arctan2(yg-y, xg-x) - yaw
-        next_w = 2*v*np.sin(ang)/Ld
+        ang = np.rad2deg(np.arctan2(yg-y, xg-x)) - yaw
+        next_w = 2.0*v*np.sin(np.deg2rad(ang))/Ld
 
         return next_w, target

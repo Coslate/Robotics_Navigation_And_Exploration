@@ -1,5 +1,5 @@
 import sys
-import numpy as np 
+import numpy as np
 sys.path.append("..")
 import PathTracking.utils as utils
 from PathTracking.controller import Controller
@@ -16,8 +16,8 @@ class ControllerPurePursuitBicycle(Controller):
         if self.path is None:
             print("No path !!")
             return None, None
-        
-        # Extract State 
+
+        # Extract State
         x, y, yaw, v, l = info["x"], info["y"], info["yaw"], info["v"], info["l"]
 
         # Search Front Target
@@ -32,5 +32,9 @@ class ControllerPurePursuitBicycle(Controller):
         target = self.path[target_idx]
 
         # TODO: Pure Pursuit Control for Bicycle Kinematic Model
-        next_delta = 0
+        xg  = target[0]
+        yg  = target[1]
+        ang = np.rad2deg(np.arctan2(yg-y, xg-x)) - yaw
+        next_delta = np.rad2deg(np.arctan2(2.0*l*np.sin(np.deg2rad(ang)), Ld))
+
         return next_delta, target
