@@ -14,7 +14,7 @@ if __name__ == "__main__":
 
     # Select Simulator and Controller
     try:
-        # Basic Kinematic Model 
+        # Basic Kinematic Model
         if args.simulator == "basic":
             from Simulation.simulator_basic import SimulatorBasic as Simulator
             if args.controller == "pid":
@@ -74,7 +74,7 @@ if __name__ == "__main__":
         p1 = (int(path[i,0]), int(path[i,1]))
         p2 = (int(path[i+1,0]), int(path[i+1,1]))
         cv2.line(img_path, p1, p2, (1.0,0.5,0.5), 1)
-    
+
     # Initialize Car
     simulator = Simulator()
     start = (50,300,0)
@@ -93,33 +93,42 @@ if __name__ == "__main__":
                 next_v = 0
             # Lateral
             info = {
-                "x":simulator.state.x, 
-                "y":simulator.state.y, 
-                "yaw":simulator.state.yaw, 
-                "v":simulator.state.v, 
-                "dt":simulator.dt
+                "x":simulator.state.x,
+                "y":simulator.state.y,
+                "yaw":simulator.state.yaw,
+                "v":simulator.state.v,
+                "dt":simulator.dt,
+                "w":simulator.state.w
             }
             next_w, target = controller.feedback(info)
             command = ControlState("basic", next_v, next_w)
         elif args.simulator == "diff_drive":
             # Longitude
             if end_dist > 10:
-                next_v = 20
+                next_v = 800
             else:
                 next_v = 0
             # Lateral
             info = {
-                "x":simulator.state.x, 
-                "y":simulator.state.y, 
-                "yaw":simulator.state.yaw, 
-                "v":simulator.state.v, 
-                "dt":simulator.dt
+                "x":simulator.state.x,
+                "y":simulator.state.y,
+                "yaw":simulator.state.yaw,
+                "v":simulator.state.v,
+                "dt":simulator.dt,
+                "w" : simulator.state.w
             }
             next_w, target = controller.feedback(info)
             # TODO: v,w to motor control
             r = simulator.wu/2
-            next_lw = 0
-            next_rw = 0
+            l = simulator.l
+            next_rw = next_v/r + np.deg2rad(next_w)*l/r
+            next_lw = next_v/r - np.deg2rad(next_w)*l/r
+            '''
+            print(f"----------")
+            print(f"next_w = {next_w}")
+            print(f"next_rw = {next_rw}")
+            print(f"next_lw = {next_lw}")
+            '''
             command = ControlState("diff_drive", next_lw, next_rw)
         elif args.simulator == "bicycle":
             # Longitude (P Control)
@@ -130,17 +139,18 @@ if __name__ == "__main__":
             next_a = (target_v - simulator.state.v)*0.5
             # Lateral
             info = {
-                "x":simulator.state.x, 
-                "y":simulator.state.y, 
-                "yaw":simulator.state.yaw, 
+                "x":simulator.state.x,
+                "y":simulator.state.y,
+                "yaw":simulator.state.yaw,
                 "v":simulator.state.v,
                 "delta":simulator.cstate.delta,
-                "l":simulator.l, 
-                "dt":simulator.dt
+                "l":simulator.l,
+                "dt":simulator.dt,
+                "w":simulator.state.w
             }
             next_delta, target = controller.feedback(info)
             command = ControlState("bicycle", next_a, next_delta)
- 
+
         # Update State & Render
         simulator.step(command)
         img = img_path.copy()

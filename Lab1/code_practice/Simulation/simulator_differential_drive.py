@@ -45,7 +45,7 @@ class SimulatorDifferentialDrive(Simulator):
         self.state = State()
         self.cstate = ControlState(self.control_type, 0.0, 0.0)
         self.car_box = utils.compute_car_box(self.car_w, self.car_f, self.car_r, self.state.pose())
-    
+
     def init_pose(self, pose):
         self.state.update(pose[0], pose[1], pose[2])
         self.cstate = ControlState(self.control_type, 0.0, 0.0)
@@ -76,7 +76,7 @@ class SimulatorDifferentialDrive(Simulator):
             self.record.append((self.state.x, self.state.y, self.state.yaw))
             self.car_box = utils.compute_car_box(self.car_w, self.car_f, self.car_r, self.state.pose())
         return state_next, {}
-    
+
     def __str__(self):
         return self.state.__str__() + " " + self.cstate.__str__()
 
@@ -106,7 +106,7 @@ class SimulatorDifferentialDrive(Simulator):
         t3 = utils.rot_pos( 0, -4, -self.state.yaw) + np.array((self.state.x,self.state.y))
         cv2.line(img, (int(self.state.x),int(self.state.y)), (int(t1[0]), int(t1[1])), (0,0,1), 2)
         cv2.line(img, (int(t2[0]), int(t2[1])), (int(t3[0]), int(t3[1])), (1,0,0), 2)
-        
+
         ########## Draw Wheels ##########
         w1 = utils.rot_pos( 0, self.l, -self.state.yaw) + np.array((self.state.x,self.state.y))
         w2 = utils.rot_pos( 0,-self.l, -self.state.yaw) + np.array((self.state.x,self.state.y))

@@ -1,5 +1,6 @@
 import sys
 import numpy as np
+import math
 sys.path.append("..")
 import PathTracking.utils as utils
 from PathTracking.controller import Controller
@@ -9,6 +10,18 @@ class ControllerPurePursuitBicycle(Controller):
         self.path = None
         self.kp = kp
         self.Lfc = Lfc
+
+    def normalize_angle(self, angle):
+        #normalize the angle to [-np.pi, np.pi]
+        '''
+        a_mod = math.fmod(angle+180, 2*180)
+        if a_mod < 0.0:
+            a_mod += 2.0*180
+
+        return a_mod - 180
+        '''
+
+        return (angle + 180) % 360 - 180
 
     # State: [x, y, yaw, v, l]
     def feedback(self, info):
@@ -34,7 +47,8 @@ class ControllerPurePursuitBicycle(Controller):
         # TODO: Pure Pursuit Control for Bicycle Kinematic Model
         xg  = target[0]
         yg  = target[1]
-        ang = np.rad2deg(np.arctan2(yg-y, xg-x)) - yaw
+        yaw_norm = self.normalize_angle(yaw)
+        ang = self.normalize_angle(np.rad2deg(np.arctan2(yg-y, xg-x)) - yaw_norm)
         next_delta = np.rad2deg(np.arctan2(2.0*l*np.sin(np.deg2rad(ang)), Ld))
 
         return next_delta, target

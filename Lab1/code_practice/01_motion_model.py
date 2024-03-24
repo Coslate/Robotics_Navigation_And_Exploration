@@ -30,7 +30,7 @@ def run_basic():
         else:
             command = ControlState(args.simulator, None, None)
         simulator.step(command)
-        print("\r", simulator, end="\t\n")
+        #print("\r", simulator, end="\t\n")
         img = simulator.render()
         img = cv2.flip(img, 0)
         cv2.imshow("Motion Model", img)
@@ -63,7 +63,7 @@ def run_diff_drive():
         else:
             command = ControlState(args.simulator, None, None)
         simulator.step(command)
-        print("\r", simulator, end="\t\n")
+        #print("\r", simulator, end="\t\n")
         img = simulator.render()
         img = cv2.flip(img, 0)
         cv2.imshow("Motion Model", img)
@@ -96,7 +96,7 @@ def run_bicycle():
         else:
             command = ControlState(args.simulator, 0, None)
         simulator.step(command)
-        print("\r", simulator, end="\t\n")
+        #print("\r", simulator, end="\t\n")
         img = simulator.render()
         img = cv2.flip(img, 0)
         cv2.imshow("Motion Model", img)

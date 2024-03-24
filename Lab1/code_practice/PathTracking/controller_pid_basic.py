@@ -25,7 +25,7 @@ class ControllerPIDBasic(Controller):
             return None, None
 
         # Extract State
-        x, y, dt = info["x"], info["y"], info["dt"]
+        x, y, dt, yaw = info["x"], info["y"], info["dt"], info["yaw"]
 
         # Search Nesrest Target
         min_idx, min_dist = utils.search_nearest(self.path, (x,y))
@@ -34,8 +34,8 @@ class ControllerPIDBasic(Controller):
         # TODO: PID Control for Basic Kinematic Model
         xg  = target[0]
         yg  = target[1]
-        ang = np.arctan2(yg-y, xg-x)
-        ep  = min_dist * np.sin(ang)
+        ang = utils.angle_norm(np.rad2deg(np.arctan2(yg-y, xg-x)) - yaw)
+        ep  = min_dist * np.sin(np.deg2rad(ang))
 
         self.acc_ep += dt*ep
         diff_ep      = (ep - self.last_ep)/dt
