@@ -242,7 +242,9 @@ class PlannerAStar(Planner):
                     continue
 
                 if each_neighbor in self.g:
-                    self.g[each_neighbor] = min(self.g[minpt_pos] + utils.distance(minpt_pos, each_neighbor), self.g[each_neighbor])
+                    new_gvalue = self.g[minpt_pos] + utils.distance(minpt_pos, each_neighbor)
+                    if self.g[each_neighbor] > new_gvalue:
+                        self.g[each_neighbor] = new_gvalue
                 else:
                     self.g[each_neighbor] = self.g[minpt_pos] + utils.distance(minpt_pos, each_neighbor)
 
