@@ -22,17 +22,10 @@ if __name__ == "__main__":
     m = 1-cv2.dilate(1-m, np.ones((20,20)))
     m_copy = m.copy()
     img = img.astype(float)/255.
+
+    '''
     print(f"m.shape = {m.shape}")
     print(f"img.shape = {img.shape}")
-
-    for i in range(m.shape[0]):
-        for j in range(m.shape[1]):
-            if m[i, j] < 0.5:
-                m[i, j] = 1
-            else:
-                m[i, j] = 0
-
-    # Choose Planner
     start=(100,200)
     goal=(380,520)
 
@@ -41,6 +34,11 @@ if __name__ == "__main__":
     print(f"m[goal[1], goal[0]] = {m[goal[1], goal[0]]}")
     print(f"img[start[1], start[0]] = {img[start[1], start[0]]}")
     print(f"img[goal[1], goal[0]] = {img[goal[1], goal[0]]}")
+    '''
+
+    # Choose Planner
+    start=(100,200)
+    goal=(380,520)
 
     if args.planner == "a_star":
         from PathPlanning.planner_a_star import PlannerAStar as Planner
@@ -74,7 +72,7 @@ if __name__ == "__main__":
 
     img_ = cv2.flip(img,0)
     cv2.imshow("Path Planning",img_)
-    cv2.imshow("Path Planning img",img)
-    cv2.imshow("Path Planning m_copy",m_copy)
-    cv2.imshow("Path Planning m",m)
+#    cv2.imshow("Path Planning img",img)
+#    cv2.imshow("Path Planning m_copy",m_copy)
+#    cv2.imshow("Path Planning m",m)
     k = cv2.waitKey(0)

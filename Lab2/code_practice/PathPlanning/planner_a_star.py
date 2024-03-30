@@ -3,7 +3,7 @@ import sys
 sys.path.append("..")
 import PathPlanning.utils as utils
 from PathPlanning.planner import Planner
-from typing import Type, Optional, List, Union
+from typing import Type, Optional, List, Union, Dict
 
 class HeapPoint():
     def __init__(self, position: Optional[tuple[int, int]] = None, value: Optional[Union[int, float]] = None) -> None:
@@ -48,6 +48,21 @@ class MinHeap():
         self.__heapDown(0)
 
         return minpt
+
+    def isExist(self, pos: tuple[int, int]) -> bool:
+        if pos in self.map_pos2value:
+            return True
+        else:
+            return False
+
+    def isEmpty(self) -> bool:
+        if self.length == 0:
+            return True
+        else:
+            return False
+
+    def getHeapPtValue(self, pos: tuple[int, int]) -> Union[int, float]:
+        return self.heap[self.map_pos2value[pos]].getValue()
 
     def setNewValue(self, position: tuple[int, int], new_value: Optional[Union[int, float]]) -> None:
         pos = self.map_pos2value[position]
@@ -120,29 +135,8 @@ class PlannerAStar(Planner):
         self.g = {} # Distance from node to goal
         self.goal_node = None
 
-    def buildAdj(self, img=None) -> None:
-        row = img.shape[0]
-        col = img.shape[1]
-
-
-    def planning(self, start=(100,200), goal=(375,520), inter=None, img=None):
-        if inter is None:
-            inter = self.inter
-        start = (int(start[0]), int(start[1]))
-        goal = (int(goal[0]), int(goal[1]))
-        # Initialize
-        self.initialize()
-        self.queue.append(start)
-        self.parent[start] = None
-        self.g[start] = 0
-        self.h[start] = utils.distance(start, goal)
-
-        minheap = MinHeap()
-        minheap.insert(HeapPoint(start, self.g[start]+self.h[start]))
-
-        '''test heap code'''
-        '''
-        minheap = MinHeap()
+    def __testMinHeap(self, minheap: MinHeap) -> None:
+        print(f"minheap.isEmpty() = {minheap.isEmpty()}")
         minheap.insert(HeapPoint((1, 1), 200))
         minheap.insert(HeapPoint((2, 1), 300))
         minheap.insert(HeapPoint((2, 43), 600))
@@ -167,11 +161,105 @@ class PlannerAStar(Planner):
         minheap.setNewValue((6, 43), 20)
         minheap.printHeap()
         minheap.printMap()
-        '''
-        while(1):
-            # TODO: A Star Algorithm
-            break
+        print(f"-----")
+        print(f"minheap.isEmpty() = {minheap.isEmpty()}")
+        minpt = minheap.extractMin()
+        minpt = minheap.extractMin()
+        minpt = minheap.extractMin()
+        minpt = minheap.extractMin()
+        minpt = minheap.extractMin()
+        minheap.printHeap()
+        minheap.printMap()
+        print(f"minheap.isEmpty() = {minheap.isEmpty()}")
 
+    def buildAdj(self, img=None) -> Dict[tuple[int, int], List[tuple[int, int]]]:
+        row = img.shape[0]
+        col = img.shape[1]
+        adj_list = {}
+
+        for i in range(row):
+            for j in range(col):
+                if self.map[int(i),int(j)]<0.5:
+                    continue
+                else:
+                    adj_list[(j, i)] = []
+
+                    if j+1 < col and self.map[int(i),int(j+1)]>=0.5:
+                        adj_list[(j, i)].append((j+1, i))
+                    if j-1 > -1  and self.map[int(i),int(j-1)]>=0.5:
+                        adj_list[(j, i)].append((j-1, i))
+                    if i+1 < row  and self.map[int(i+1),int(j)]>=0.5:
+                        adj_list[(j, i)].append((j, i+1))
+                    if i-1 > -1  and self.map[int(i-1),int(j)]>=0.5:
+                        adj_list[(j, i)].append((j, i-1))
+                    if i-1 > -1 and j-1 > -1 and self.map[int(i-1),int(j-1)]>=0.5:
+                        adj_list[(j, i)].append((j-1, i-1))
+                    if i-1 > -1 and j+1 < col and self.map[int(i-1),int(j+1)]>=0.5:
+                        adj_list[(j, i)].append((j+1, i-1))
+                    if i+1 < row and j-1 > -1 and self.map[int(i+1),int(j-1)]>=0.5:
+                        adj_list[(j, i)].append((j-1, i+1))
+                    if i+1 < row and j+1 < col and self.map[int(i+1),int(j+1)]>=0.5:
+                        adj_list[(j, i)].append((j+1, i+1))
+
+        return adj_list
+
+    def planning(self, start=(100,200), goal=(375,520), inter=None, img=None):
+        if inter is None:
+            inter = self.inter
+        start = (int(start[0]), int(start[1]))
+        goal = (int(goal[0]), int(goal[1]))
+        # Initialize
+        self.initialize()
+        self.queue.append(start)
+        self.parent[start] = None
+        self.g[start] = 0
+        self.h[start] = utils.distance(start, goal)
+        visited = {}
+
+        print(f"> buildAdj()...")
+        adj_list = self.buildAdj(img)
+        minheap = MinHeap()
+        minheap.insert(HeapPoint(start, self.g[start]+self.h[start]))
+        print(f"> A*()...")
+
+        '''test heap code'''
+        '''
+        self.__testMinHeap(minheap)
+        '''
+
+        while(not minheap.isEmpty()):
+            # TODO: A Star Algorithm
+            minpt = minheap.extractMin()
+            minpt_pos = minpt.getPosition()
+            visited[minpt_pos] = True
+
+            if minpt_pos[0] == goal[0] and minpt_pos[1] == goal[1]:
+                self.goal_node = goal
+                break
+
+            for each_neighbor in adj_list[minpt_pos]:
+                if each_neighbor in visited:
+                    continue
+
+                if each_neighbor in self.g:
+                    self.g[each_neighbor] = min(self.g[minpt_pos] + utils.distance(minpt_pos, each_neighbor), self.g[each_neighbor])
+                else:
+                    self.g[each_neighbor] = self.g[minpt_pos] + utils.distance(minpt_pos, each_neighbor)
+
+                self.h[each_neighbor] = utils.distance(each_neighbor, goal)
+                key_value = self.g[each_neighbor] + self.h[each_neighbor]
+
+                if minheap.isExist(each_neighbor):
+                    orig_key_value = minheap.getHeapPtValue(each_neighbor)
+
+                    if orig_key_value > key_value:
+                        minheap.setNewValue(each_neighbor, key_value)
+                        self.parent[each_neighbor] = minpt_pos
+                else:
+                    minheap.insert(HeapPoint(each_neighbor, key_value))
+                    self.parent[each_neighbor] = minpt_pos
+
+        print(f"> extractPath()...")
         # Extract path
         path = []
         p = self.goal_node
@@ -184,6 +272,8 @@ class PlannerAStar(Planner):
             p = self.parent[p]
         if path[-1] != goal:
             path.append(goal)
+
+        print(f"len(path) = {len(path)}")
         return path
 
 
